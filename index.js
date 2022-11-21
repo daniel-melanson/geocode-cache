@@ -33,15 +33,17 @@ app.get("/search", (req, res) => {
       url.searchParams.append("text", q);
       url.searchParams.append("apiKey", process.env["API_KEY"]);
 
-      const res = await fetch(url.toString());
-      if (res.ok) {
-        const json = await res.json();
+      const response = await fetch(url.toString());
+      if (response.ok) {
+        const json = await response.json();
 
         const results = json.features.map(f => f.properties);
 
         cache.set(q, results);
 
         res.status(200).json(json).end();
+      } else {
+        res.status(response.status).end();
       }
     } catch (e) {
       res.status(500).end();
