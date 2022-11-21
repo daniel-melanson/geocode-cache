@@ -38,7 +38,14 @@ app.get("/search", (req, res) => {
       if (response.ok) {
         const json = await response.json();
 
-        const results = json.features.map(f => f.properties);
+        const results = json.features
+          .map(f => f.properties)
+          .map(r => {
+            r.lat = String(r.lat);
+            r.lon = String(r.lon);
+
+            return r;
+          });
 
         cache.set(q, results);
 
