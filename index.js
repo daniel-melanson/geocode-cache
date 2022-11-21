@@ -19,11 +19,13 @@ const limiter = new Bottleneck({
 
 app.get("/search", (req, res) => {
   const { q } = req.query;
+  console.log(q);
 
   if (typeof q !== "string") return res.status(400).end();
   if (q.length < 4) return res.status(200).json([]).end();
 
   if (cache.has(q)) {
+    console.log("Cache hit");
     return res.status(200).json(cache.get(q));
   }
 
@@ -38,18 +40,16 @@ app.get("/search", (req, res) => {
       if (response.ok) {
         const json = await response.json();
 
-        const results = json.features
-          .map(f => f.properties)
-          .map(r => {
-            r.lat = String(r.lat);
-            r.lon = String(r.lon);
+        const results = json.features.map(f => f.properties);
 
-            return r;
-          });
+        results.forEach(r => {
+          r.lat = String(r.lat);
+          r.lon = String(r.lon);
+        });
 
         cache.set(q, results);
 
-        res.status(200).json(json).end();
+        res.status(200).json(results).end();
       } else {
         res.status(response.status).end();
       }
