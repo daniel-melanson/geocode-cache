@@ -1,6 +1,8 @@
 import Bottleneck from "bottleneck";
+import { config } from "dotenv";
 import express from "express";
 import NodeCache from "node-cache";
+config();
 
 const app = express();
 const port = process.env.PORT;
@@ -26,14 +28,18 @@ app.get("/search", (req, res) => {
 
   limiter.schedule(async () => {
     try {
-      const url = new URL("https://geocode.maps.co/search");
-      url.searchParams.append("q", q);
+      const url = new URL("https://api.geoapify.com/v1/geocode/search");
+
+      url.searchParams.append("text", q);
+      url.searchParams.append("apiKey", process.env["API_KEY"]);
 
       const res = await fetch(url.toString());
       if (res.ok) {
         const json = await res.json();
 
-        cache.set(q, json);
+        const results = json.features.map(f => f.properties);
+
+        cache.set(q, results);
 
         res.status(200).json(json).end();
       }
