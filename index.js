@@ -20,7 +20,8 @@ const limiter = new Bottleneck({
 app.get("/search", (req, res) => {
   const { q } = req.query;
 
-  if (typeof q !== "string" || q.length < 4) return res.status(400).end();
+  if (typeof q !== "string") return res.status(400).end();
+  if (q.length < 4) return res.status(200).json([]).end();
 
   if (cache.has(q)) {
     return res.status(200).json(cache.get(q));
